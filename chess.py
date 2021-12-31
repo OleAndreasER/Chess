@@ -10,7 +10,7 @@ testBoard = [
     ['P','P','.','P','P','.','P','P'],
     ['R','N','B','Q','.','B','N','R'],
 ]
-board = [
+startBoard = [
     ['r','n','b','q','k','b','n','r'],
     ['p','p','p','p','p','p','p','p'],
     ['.','.','.','.','.','.','.','.'],
@@ -94,12 +94,10 @@ def slopesOfPiece(piece):
         'q':(0,'inf',1,-1), 'k':(0,'inf',1,-1), 'p': ('inf',1,-1)       
     }[piece.lower()]
 
-
 def highlitBoard(board, coordinates):
-    ret = board
-    for x, y in coordinates:
-        board[y][x] = 'X'
-    return ret
+    return [["X" if (x,y) in coordinates else piece
+            for x, piece in enumerate(row)]
+            for y, row in enumerate(board)]
 
 def isPiece(board, coordinate):
     return pieceAt(board, coordinate) != '.'
@@ -182,17 +180,54 @@ def legalMoves(board, piece, coordinate):
             linesOfPiece(piece, coordinate))))))
 
 def isWon():
-    return True
+    return False
+
+def isSquare(inp):
+    return (
+        len(inp) == 2 and
+        inp[0] in xAxis and
+        inp[1] in yAxis
+    )
+
+def select(isWhiteTurn, board):
+    return lambda inp: pieceAt(board, xyFromLetterNum(inp)).isupper() if isWhiteTurn else pieceAt(board, xyFromLetterNum(inp)).islower()
+
+def move(selLegalMoves, board):
+    return lambda inp: xyFromLetterNum(inp) in selLegalMoves
+
+def getSquare(txt, isValid):
+    inp = input(txt)
+    if not isSquare(inp) or not isValid(inp):
+        return getSquare(txt, isValid)
+    return inp
+
+def applyMove(board, frm, to):
+    frmX, frmY = frm
+    toX, toY = to
+    ret = list(board)
+    p1 = board[frmY][frmX]
+    ret[toY][toX] = p1
+    ret[frmY][frmX] = "."
+    return ret
 
 def main():
     isWhiteTurn = True
-    print(formatBoard(testBoard))
-    square = input('square: ')
-    coords = xyFromLetterNum(square)
-    piece = pieceAt(testBoard, coords)
-    print(formatBoard(highlitBoard(testBoard, legalMoves(testBoard, piece, coords))))
-
+    board = startBoard
     while not isWon():
+        print(formatBoard(board))
+        
+        #SELECT SQUARE
+        selected = getSquare("Select a square: ", select(isWhiteTurn, board)) 
+        selCoordinate = xyFromLetterNum(selected)
+        selPiece = pieceAt(board, selCoordinate)
+        selLegalMoves = legalMoves(board, selPiece, selCoordinate)
+        print(formatBoard(highlitBoard(board, selLegalMoves)))
+
+        #MOVE PIECE
+        moveTo = getSquare("Move to: ", move(selLegalMoves, board))
+        moveCoordinate = xyFromLetterNum(moveTo)
+        board = applyMove(board, selCoordinate, moveCoordinate)
+
         isWhiteTurn = not isWhiteTurn
 
 if __name__ == "__main__": main()
