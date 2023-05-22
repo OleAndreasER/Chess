@@ -156,17 +156,17 @@ def pawnCaptureRules(board, piece, coordinate, lines):
             else line
             for line in lines]
 
-def isEnemies(piece1, piece2):
+def areEnemies(piece1, piece2):
     return (piece1.isupper() ^ piece2.isupper())
 
-def isAnyEmpty(piece1, piece2):
+def aPieceIsEmpty(piece1, piece2):
     return piece1 == '.' or piece2 == '.'
 
 def popFriendlyPieces(board, piece, lines):
     return [line if (
                 len(line) == 0 or
-                isEnemies(pieceAt(board, line[-1]), piece) or
-                isAnyEmpty(pieceAt(board, line[-1]), piece)
+                areEnemies(pieceAt(board, line[-1]), piece) or
+                aPieceIsEmpty(pieceAt(board, line[-1]), piece)
             ) 
             else line[:-1]
             for line in lines]
@@ -217,16 +217,17 @@ def main():
         print(formatBoard(board))
         
         #SELECT SQUARE
+        print("-WHITE-" if isWhiteTurn else "-BLACK-")
         selected = getSquare("Select a square: ", select(isWhiteTurn, board)) 
-        selCoordinate = xyFromLetterNum(selected)
-        selPiece = pieceAt(board, selCoordinate)
-        selLegalMoves = legalMoves(board, selPiece, selCoordinate)
-        print(formatBoard(highlitBoard(board, selLegalMoves)))
+        selectedCoordinate = xyFromLetterNum(selected)
+        selectedPiece = pieceAt(board, selectedCoordinate)
+        selectedLegalMoves = legalMoves(board, selectedPiece, selectedCoordinate)
+        print(formatBoard(highlitBoard(board, selectedLegalMoves)))
 
         #MOVE PIECE
-        moveTo = getSquare("Move to: ", move(selLegalMoves, board))
+        moveTo = getSquare("Move to: ", move(selectedLegalMoves, board))
         moveCoordinate = xyFromLetterNum(moveTo)
-        board = applyMove(board, selCoordinate, moveCoordinate)
+        board = applyMove(board, selectedCoordinate, moveCoordinate)
 
         isWhiteTurn = not isWhiteTurn
 
